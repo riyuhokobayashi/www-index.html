@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>TETR.IO Mobile - Nível 25</title>
+  <title>Tetris Mobile</title>
   <style>
     * {
       box-sizing: border-box;
@@ -12,344 +12,787 @@
       user-select: none;
       -webkit-user-select: none;
       -webkit-touch-callout: none;
-      touch-action: manipulation;
+      touch-action: none;
     }
-    html {
-      width: 100%;
-      height: 100%;
-      background: #07090e;
-    }
-    body {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+    html, body {
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: radial-gradient(circle at center, #131926 0%, #07090e 100%);
-      color: #eef2ff;
-      font-family: system-ui, -apple-system, sans-serif;
+      background: #141036;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #ffffff;
+    }
+    body {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 28%, #3c2a85 0%, #1c1648 52%, #0e0b28 100%);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 8px 6px 10px 6px;
+      align-items: center;
+      padding: 6px 6px 10px 6px;
     }
 
-    /* BARRA SUPERIOR */
+    /* BARRA SUPERIOR COMPACTA (MÚSICAS E STATUS) */
     .top-bar {
+      width: 100%;
+      max-width: 430px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 4px;
-      background: #121722;
-      border: 1px solid #263147;
-      border-radius: 8px;
-      padding: 6px 8px;
+      padding: 4px 8px;
+      background: rgba(10, 12, 28, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 10px;
       flex-shrink: 0;
+      z-index: 10;
     }
-    .brand {
-      font-weight: 900;
-      font-size: 13px;
-      letter-spacing: 1px;
-      color: #00f0ff;
-    }
-    .music-bar {
+    .music-strip {
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
     }
-    .btn-sm {
-      background: #1b2234;
-      color: #eef2ff;
-      border: 1px solid #263147;
-      border-radius: 5px;
-      padding: 5px 7px;
+    .m-btn {
+      background: rgba(255, 255, 255, 0.12);
+      color: #dfe6ff;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 6px;
+      padding: 3px 7px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
     }
-    .btn-sm.active {
-      background: #00f0ff;
-      color: #000;
-      border-color: #00f0ff;
+    .m-btn.active {
+      background: linear-gradient(180deg, #5fd839 0%, #37981b 100%);
+      color: #fff;
+      border-color: #8df069;
+      box-shadow: 0 0 6px rgba(95, 216, 57, 0.5);
+    }
+    .top-status {
+      font-size: 12px;
+      font-weight: 800;
+      color: #ffd54f;
+      letter-spacing: 0.5px;
     }
 
-    /* ÁREA DO JOGO */
-    .game-area {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+    /* PALCO PRINCIPAL ESTILO PLAY.TETRIS.COM */
+    .stage {
+      width: 100%;
+      max-width: 430px;
       flex: 1;
       min-height: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 6px;
       padding: 4px 0;
+      position: relative;
     }
+
+    /* MOLDURA PRATEADA 3D CLÁSSICA */
+    .silver-frame {
+      background: linear-gradient(145deg, #f3f5f8 0%, #cfd5df 48%, #9aa3b2 100%);
+      border-radius: 16px;
+      padding: 5px;
+      box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.55),
+        inset 0 2px 2px rgba(255, 255, 255, 0.9),
+        inset 0 -2px 3px rgba(60, 68, 82, 0.8);
+      border: 1px solid #7c8594;
+    }
+    .inner-screen {
+      background: #17191e;
+      border-radius: 12px;
+      border: 2px solid #3c4049;
+      box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* COLUNAS LATERAIS */
     .side-col {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      width: 66px;
+      gap: 8px;
+      width: 78px;
       flex-shrink: 0;
     }
-    .box {
-      background: #121722;
-      border: 1px solid #263147;
-      border-radius: 8px;
-      padding: 4px;
+    .panel-box {
+      padding: 5px 4px 6px 4px;
       text-align: center;
     }
-    .box-title {
-      font-size: 9px;
-      font-weight: 800;
-      color: #7c8ba1;
-      letter-spacing: 1px;
-      margin-bottom: 2px;
+    .panel-label {
+      font-size: 10px;
+      font-weight: 900;
+      color: #e4e8f0;
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+      text-shadow: 0 1px 2px #000;
     }
-    .stat-val {
-      font-size: 13px;
+    .mini-well {
+      background: #050608;
+      border-radius: 8px;
+      border: 1px solid #2b2f38;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+    .stats-well {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 6px 4px;
+    }
+    .stat-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stat-title {
+      font-size: 9px;
+      font-weight: 900;
+      color: #cfd6e3;
+      letter-spacing: 0.7px;
+    }
+    .stat-pill {
+      background: #050608;
+      border: 1px solid #2e333d;
+      border-radius: 6px;
+      padding: 3px 2px;
+      font-size: 12px;
       font-weight: 800;
       color: #ffffff;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
     }
-    .stat-val.accent {
-      color: #00f0ff;
+
+    /* TABULEIRO CENTRAL */
+    .board-frame {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .board-wrap {
+    .board-screen {
+      background: #040507;
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     canvas#board {
-      background: #06080d;
-      border: 2px solid #2e3c56;
-      border-radius: 6px;
       display: block;
+      background: #040507;
     }
-    .action-banner {
+
+    /* TELA INICIAL DENTRO DO TABULEIRO (IGUAL À FOTO) */
+    .board-menu {
       position: absolute;
-      top: 20%;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(16, 18, 24, 0.96) 0%, rgba(7, 8, 12, 0.98) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 8px;
+      z-index: 5;
+    }
+    .board-menu.hidden {
+      display: none;
+    }
+
+    /* LOGO TETRIS EM FORMATO DE T */
+    .t-logo-wrap {
+      position: relative;
+      width: 146px;
+      height: 76px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .t-logo-top {
+      width: 144px;
+      height: 44px;
+      background: linear-gradient(180deg, #1b65b8 0%, #0d3875 100%);
+      border: 3px solid #4fa3ff;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.7), inset 0 2px 3px rgba(255,255,255,0.4);
+      z-index: 2;
+    }
+    .t-logo-stem {
+      width: 46px;
+      height: 34px;
+      margin-top: -4px;
+      background: linear-gradient(180deg, #0d3875 0%, #08234d 100%);
+      border: 3px solid #4fa3ff;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+      z-index: 1;
+    }
+    .t-letters {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      display: flex;
+      gap: 1px;
+      text-shadow: 1px 2px 0 #000, -1px -1px 0 #000;
+    }
+    .tl-1 { color: #ff2a2a; }
+    .tl-2 { color: #ff8c00; }
+    .tl-3 { color: #ffd900; }
+    .tl-4 { color: #26d938; }
+    .tl-5 { color: #00d0ff; }
+    .tl-6 { color: #b738ff; }
+
+    /* BOTÕES PLAY E LEVEL DA TELA INICIAL */
+    .menu-btn-play {
+      width: 122px;
+      padding: 8px 0;
+      background: linear-gradient(180deg, #67d93f 0%, #3d9e1e 55%, #2c7a12 100%);
+      border: 2px solid #9ef07f;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.6), inset 0 2px 2px rgba(255,255,255,0.5);
+      cursor: pointer;
+    }
+    .menu-btn-play:active {
+      transform: scale(0.97);
+    }
+    .menu-btn-lvl {
+      width: 108px;
+      padding: 5px 0;
+      background: linear-gradient(180deg, #7e8591 0%, #525863 55%, #3c414a 100%);
+      border: 1px solid #aeb6c4;
+      border-radius: 7px;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+      cursor: pointer;
+    }
+
+    /* TABELA DE HIGH SCORES */
+    .hs-card {
+      width: 100%;
+      background: rgba(5, 6, 9, 0.9);
+      border: 1px solid #333842;
+      border-radius: 8px;
+      padding: 6px 8px;
+    }
+    .hs-title {
+      font-size: 10px;
+      font-weight: 900;
+      text-align: center;
+      color: #ffffff;
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+    }
+    .hs-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 800;
+      color: #d6dce8;
+      padding: 1.5px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .hs-row:last-child {
+      border-bottom: none;
+    }
+
+    /* BOTÕES INFERIORES DO MENU (ENGRENAGEM, ?, MORE) */
+    .menu-footer-btns {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+    }
+    .sq-btn {
+      width: 36px;
+      height: 34px;
+      border-radius: 7px;
+      background: linear-gradient(180deg, #7b828e 0%, #484d57 100%);
+      border: 1px solid #adb4c2;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+    .more-btn {
+      padding: 0 8px;
+      height: 34px;
+      border-radius: 7px;
+      background: linear-gradient(180deg, #62d43b 0%, #338a16 100%);
+      border: 1px solid #97eb78;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    /* BANNERS FLUTUANTES (T-SPIN / BACK TO BACK / TETRIS) */
+    .Popup-banner {
+      position: absolute;
+      top: 28%;
       left: 50%;
       transform: translateX(-50%);
       pointer-events: none;
-      text-align: center;
+      font-size: 18px;
       font-weight: 900;
-      font-size: 14px;
-      color: #ffea00;
-      text-shadow: 0 2px 6px #000;
+      color: #ffffff;
+      text-shadow: 0 0 10px #00e5ff, 0 2px 6px #000;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+      white-space: nowrap;
+      z-index: 4;
+    }
+    .side-badge {
+      margin-top: 4px;
+      padding: 4px 3px;
+      border-radius: 6px;
+      font-size: 9px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.15;
       opacity: 0;
       transition: opacity 0.2s;
-      white-space: nowrap;
+    }
+    .badge-tspin {
+      background: #9c27b0;
+      border: 1px solid #e040fb;
+      color: #fff;
+    }
+    .badge-b2b {
+      background: #00bfa5;
+      border: 1px solid #64ffda;
+      color: #00251a;
     }
 
-    /* CONTROLOS NO ECRÃ */
-    .controls {
+    /* CONTROLES DO VÍDEO (ARCO À ESQUERDA + D-PAD EM CRUZ À DIREITA) */
+    .video-controls {
+      width: 100%;
+      max-width: 430px;
+      height: 150px;
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 6px 2px 6px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* CLUSTER ESQUERDO (PAUSE, HOLD, GIRO ANTI-HORÁRIO, GIRO HORÁRIO) */
+    .left-cluster {
+      position: relative;
+      width: 168px;
+      height: 142px;
+    }
+    .v-btn {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.18);
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .v-btn.pressed {
+      background: rgba(255, 255, 255, 0.42);
+      border-color: #ffffff;
+      transform: scale(0.94);
+    }
+    /* Botão Pause (Canto superior esquerdo do arco) */
+    .btn-pause {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      top: 6px;
+      left: 4px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+    /* Botão Hold (Meio diagonal do arco) */
+    .btn-hold {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      top: 22px;
+      left: 60px;
+      font-size: 20px;
+      font-weight: 900;
+    }
+    /* Botão Giro Anti-Horário (Inferior esquerdo) */
+    .btn-ccw {
+      width: 72px;
+      height: 54px;
+      border-radius: 27px;
+      bottom: 4px;
+      left: 2px;
+      font-size: 26px;
+      font-weight: 900;
+    }
+    /* Botão Giro Horário (Inferior direito do grupo esquerdo) */
+    .btn-cw {
+      width: 72px;
+      height: 54px;
+      border-radius: 27px;
+      bottom: 4px;
+      left: 86px;
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    /* CLUSTER DIREITO: D-PAD EM CRUZ (CIMA=HARD DROP, ESQ, DIR, BAIXO=SOFT DROP) */
+    .dpad-cluster {
+      position: relative;
+      width: 166px;
+      height: 142px;
+    }
+    .dpad-btn {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.18);
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    }
+    .dpad-btn.pressed {
+      background: rgba(255, 255, 255, 0.44);
+      border-color: #ffffff;
+      transform: scale(0.94);
+    }
+    .dpad-up {
+      width: 54px;
+      height: 44px;
+      left: 56px;
+      top: 4px;
+      border-radius: 10px 10px 6px 6px;
+    }
+    .dpad-down {
+      width: 54px;
+      height: 44px;
+      left: 56px;
+      bottom: 4px;
+      border-radius: 6px 6px 10px 10px;
+    }
+    .dpad-left {
+      width: 54px;
+      height: 44px;
+      left: 0px;
+      top: 49px;
+      border-radius: 10px 6px 6px 10px;
+    }
+    .dpad-right {
+      width: 54px;
+      height: 44px;
+      right: 0px;
+      top: 49px;
+      border-radius: 6px 10px 10px 6px;
+    }
+
+    /* BARRA DE TEMPO INFERIOR (ESTILO QUICK PLAY 03:00 DO VÍDEO) */
+    .timer-bar-wrap {
+      width: 100%;
+      max-width: 430px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 2px 10px 0 10px;
       flex-shrink: 0;
     }
-    .ctrl-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-    }
-    .ctrl-btn {
-      background: #1a2336;
-      border: 1px solid #334363;
-      border-radius: 10px;
-      color: #ffffff;
-      height: 50px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+    .timer-text {
+      font-size: 12px;
       font-weight: 800;
-      font-size: 15px;
+      color: #cfd8ec;
+      min-width: 38px;
     }
-    .ctrl-btn span {
-      font-size: 9px;
-      color: #93a3bc;
-      font-weight: 700;
-      margin-top: 2px;
+    .timer-track {
+      flex: 1;
+      height: 7px;
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
     }
-    .ctrl-btn.pressed {
-      background: #2d3d5c;
-      border-color: #00f0ff;
-      transform: translateY(2px);
+    .timer-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ff9100 0%, #ffea00 100%);
+      transition: width 0.25s linear;
     }
-    .ctrl-btn.drop {
-      background: #311728;
-      border-color: #7a2e52;
-    }
-    .ctrl-btn.hold-btn {
-      background: #162a30;
-      border-color: #296373;
+    .stars-wrap {
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: #ffd54f;
     }
 
-    /* MENU OVERLAY */
-    .overlay {
+    /* MODAIS DE CONFIGURAÇÃO / PAUSA / AJUDA */
+    .modal-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(6, 8, 14, 0.88);
+      inset: 0;
+      background: rgba(6, 8, 18, 0.85);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 99;
+      z-index: 100;
       padding: 16px;
     }
-    .overlay.hidden {
+    .modal-overlay.hidden {
       display: none;
     }
-    .modal {
-      background: #121722;
-      border: 2px solid #00f0ff;
-      border-radius: 14px;
-      padding: 16px;
+    .modal-box {
       width: 100%;
       max-width: 310px;
+      background: linear-gradient(180deg, #1b2c57 0%, #101a36 100%);
+      border: 2px solid #4fa3ff;
+      border-radius: 14px;
+      padding: 16px;
       text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
-    .modal h2 {
-      color: #00f0ff;
-      margin-bottom: 10px;
-      font-size: 19px;
+    .modal-box h3 {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 12px;
+      color: #ffffff;
+      letter-spacing: 1px;
     }
-    .field {
-      margin: 8px 0;
+    .cfg-row {
+      margin: 9px 0;
       text-align: left;
     }
-    .field label {
+    .cfg-row label {
       display: flex;
       justify-content: space-between;
       font-size: 12px;
-      color: #93a3bc;
-      margin-bottom: 3px;
+      font-weight: 700;
+      color: #b8c7e8;
+      margin-bottom: 4px;
+    }
+    .cfg-row input, .cfg-row select {
+      width: 100%;
+      padding: 7px;
+      border-radius: 6px;
+      border: 1px solid #3c5a99;
+      background: #0a1022;
+      color: #fff;
       font-weight: 700;
     }
-    .field input, .field select {
+    .modal-btn {
       width: 100%;
-      padding: 6px;
-      background: #0c1018;
-      border: 1px solid #263147;
-      color: #fff;
-      border-radius: 6px;
-    }
-    .btn-primary {
-      width: 100%;
-      padding: 12px;
-      background: #00f0ff;
-      color: #000;
-      font-weight: 900;
-      border: none;
+      padding: 11px;
+      margin-top: 8px;
       border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      font-weight: 800;
       font-size: 14px;
-      margin-top: 10px;
+    }
+    .modal-btn.orange {
+      background: linear-gradient(180deg, #ffb300 0%, #e67e00 100%);
+      color: #fff;
+      border-color: #ffe082;
     }
   </style>
 </head>
 <body>
 
+  <!-- BARRA DE MÚSICAS (5 TEMAS CLÁSSICOS) -->
   <div class="top-bar">
-    <div class="brand">TETR.IO 25</div>
-    <div class="music-bar">
-      <button class="btn-sm active" onclick="setTrack(0)" id="m0">M1</button>
-      <button class="btn-sm" onclick="setTrack(1)" id="m1">M2</button>
-      <button class="btn-sm" onclick="setTrack(2)" id="m2">M3</button>
-      <button class="btn-sm" onclick="setTrack(3)" id="m3">M4</button>
-      <button class="btn-sm" onclick="setTrack(4)" id="m4">M5</button>
-      <button class="btn-sm" onclick="toggleMute()" id="muteBtn">🔊</button>
+    <div class="music-strip">
+      <button class="m-btn active" id="m0" onclick="selectMusic(0)">M1</button>
+      <button class="m-btn" id="m1" onclick="selectMusic(1)">M2</button>
+      <button class="m-btn" id="m2" onclick="selectMusic(2)">M3</button>
+      <button class="m-btn" id="m3" onclick="selectMusic(3)">M4</button>
+      <button class="m-btn" id="m4" onclick="selectMusic(4)">M5</button>
+      <button class="m-btn" id="muteBtn" onclick="toggleAudioMute()">🔊</button>
     </div>
-    <button class="btn-sm" onclick="openMenu()">⚙️</button>
+    <div class="top-status" id="bestTop">👑 1,084,375</div>
   </div>
 
-  <div class="game-area">
+  <!-- ÁREA DO JOGO COM MOLDURAS PRATEADAS (ESTILO PLAY.TETRIS.COM) -->
+  <div class="stage">
+    <!-- COLUNA ESQUERDA: HOLD + SCORE/LEVEL/LINES -->
     <div class="side-col">
-      <div class="box">
-        <div class="box-title">HOLD</div>
-        <canvas id="holdCanvas" width="54" height="42"></canvas>
+      <div class="silver-frame">
+        <div class="inner-screen panel-box">
+          <div class="panel-label">HOLD</div>
+          <div class="mini-well" style="width:58px; height:48px;">
+            <canvas id="holdCanvas" width="54" height="44"></canvas>
+          </div>
+        </div>
       </div>
-      <div class="box">
-        <div class="box-title">NÍVEL</div>
-        <div class="stat-val accent" id="lvlVal">1 / 25</div>
-      </div>
-      <div class="box">
-        <div class="box-title">LINHAS</div>
-        <div class="stat-val" id="linesVal">0</div>
-      </div>
-      <div class="box">
-        <div class="box-title">COMBO</div>
-        <div class="stat-val" id="comboVal">0x</div>
+
+      <div class="silver-frame">
+        <div class="inner-screen stats-well">
+          <div class="stat-group">
+            <div class="stat-title">SCORE</div>
+            <div class="stat-pill" id="scoreVal">0</div>
+          </div>
+          <div class="stat-group">
+            <div class="stat-title">LEVEL</div>
+            <div class="stat-pill" id="levelVal">1</div>
+          </div>
+          <div class="stat-group">
+            <div class="stat-title">LINES</div>
+            <div class="stat-pill" id="linesVal">0</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="board-wrap">
-      <canvas id="board" width="200" height="400"></canvas>
-      <div class="action-banner" id="banner">TETRIS!</div>
+    <!-- CENTRO: TABULEIRO + TELA INICIAL EMBUTIDA -->
+    <div class="silver-frame board-frame">
+      <div class="inner-screen board-screen">
+        <canvas id="board" width="190" height="380"></canvas>
+        <div class="Popup-banner" id="actionBanner">TETRIS!</div>
+
+        <!-- TELA INICIAL IDÊNTICA À IMAGEM ENVIADA -->
+        <div class="board-menu" id="startScreen">
+          <div class="t-logo-wrap">
+            <div class="t-logo-top">
+              <div class="t-letters">
+                <span class="tl-1">T</span><span class="tl-2">E</span><span class="tl-3">T</span><span class="tl-4">R</span><span class="tl-5">I</span><span class="tl-6">S</span>
+              </div>
+            </div>
+            <div class="t-logo-stem"></div>
+          </div>
+
+          <button class="menu-btn-play" onclick="startNewGame()">PLAY</button>
+          <button class="menu-btn-lvl" id="lvlBtn" onclick="cycleStartLevel()">LEVEL: 1</button>
+
+          <div class="hs-card">
+            <div class="hs-title">HIGH SCORES</div>
+            <div id="hsList"></div>
+          </div>
+
+          <div class="menu-footer-btns">
+            <button class="sq-btn" onclick="openSettingsModal()">⚙️</button>
+            <button class="sq-btn" onclick="openHelpModal()">?</button>
+            <button class="more-btn" id="modeQuickBtn" onclick="toggleGameMode()">QUICK<br>PLAY</button>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <!-- COLUNA DIREITA: NEXT + INDICADORES T-SPIN / B2B -->
     <div class="side-col">
-      <div class="box">
-        <div class="box-title">NEXT</div>
-        <canvas id="nextCanvas" width="54" height="126"></canvas>
+      <div class="silver-frame">
+        <div class="inner-screen panel-box">
+          <div class="panel-label">NEXT</div>
+          <div class="mini-well" style="width:58px; height:142px;">
+            <canvas id="nextCanvas" width="54" height="136"></canvas>
+          </div>
+        </div>
       </div>
-      <div class="box">
-        <div class="box-title">PONTOS</div>
-        <div class="stat-val" id="scoreVal">0</div>
-      </div>
-      <div class="box">
-        <div class="box-title">TEMPO</div>
-        <div class="stat-val" id="timeVal">00:00</div>
-      </div>
+
+      <div class="side-badge badge-tspin" id="tspinBadge">T-SPIN<br>DOUBLE</div>
+      <div class="side-badge badge-b2b" id="b2bBadge">BACK<br>TO<br>BACK</div>
     </div>
   </div>
 
-  <div class="controls">
-    <div class="ctrl-row">
-      <button class="ctrl-btn hold-btn" id="btnHold">⇄<span>HOLD</span></button>
-      <button class="ctrl-btn" id="btnCCW">↺<span>GIRO ESQ</span></button>
-      <button class="ctrl-btn" id="btnCW">↻<span>GIRO DIR</span></button>
-      <button class="ctrl-btn" id="btn180">180°<span>FLIP</span></button>
+  <!-- CONTROLES IDÊNTICOS AO VÍDEO -->
+  <div class="video-controls">
+    <!-- Esquerda: Pause, Hold, Giro Anti-Horário, Giro Horário -->
+    <div class="left-cluster">
+      <button class="v-btn btn-pause" id="btnPause" aria-label="Pausar">⏸</button>
+      <button class="v-btn btn-hold" id="btnHold" aria-label="Hold">⤡</button>
+      <button class="v-btn btn-ccw" id="btnCCW" aria-label="Girar Esquerda">↺</button>
+      <button class="v-btn btn-cw" id="btnCW" aria-label="Girar Direita">↻</button>
     </div>
-    <div class="ctrl-row">
-      <button class="ctrl-btn" id="btnLeft">◀<span>ESQ</span></button>
-      <button class="ctrl-btn" id="btnDown">▼<span>SOFT</span></button>
-      <button class="ctrl-btn" id="btnRight">▶<span>DIR</span></button>
-      <button class="ctrl-btn drop" id="btnHard">⏬<span>DROP</span></button>
+
+    <!-- Direita: D-Pad em Cruz (Cima=Hard Drop, Baixo=Soft Drop, Esq/Dir=Mover) -->
+    <div class="dpad-cluster" id="dpadCluster">
+      <button class="dpad-btn dpad-up" id="btnUp" aria-label="Hard Drop">▲</button>
+      <button class="dpad-btn dpad-left" id="btnLeft" aria-label="Esquerda">◀</button>
+      <button class="dpad-btn dpad-right" id="btnRight" aria-label="Direita">▶</button>
+      <button class="dpad-btn dpad-down" id="btnDown" aria-label="Soft Drop">▼</button>
     </div>
   </div>
 
-  <div class="overlay" id="menuOverlay">
-    <div class="modal">
-      <h2 id="modalTitle">TETR.IO MOBILE</h2>
-      <div class="field">
-        <label><span>Modo de Jogo</span></label>
-        <select id="modeSelect">
-          <option value="marathon">Maratona (Nível 1 até 25)</option>
-          <option value="quick">Quick Play (Contra o Tempo 3:00)</option>
-        </select>
+  <!-- BARRA DE PROGRESSO INFERIOR (ESTILO VÍDEO 03:00) -->
+  <div class="timer-bar-wrap">
+    <div class="timer-text" id="timerLbl">03:00</div>
+    <div class="timer-track">
+      <div class="timer-fill" id="timerFill"></div>
+    </div>
+    <div class="stars-wrap" id="starsLbl">☆☆☆</div>
+  </div>
+
+  <!-- MODAL DE PAUSA (IGUAL AO VÍDEO) -->
+  <div class="modal-overlay hidden" id="pauseModal">
+    <div class="modal-box">
+      <h3>PAUSED</h3>
+      <button class="modal-btn" onclick="quitToMenu()">QUIT</button>
+      <button class="modal-btn" onclick="startNewGame()">NEW GAME</button>
+      <button class="modal-btn orange" onclick="resumeGame()">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIGURAÇÕES (DAS / ARR / NÍVEL ATÉ 25) -->
+  <div class="modal-overlay hidden" id="settingsModal">
+    <div class="modal-box">
+      <h3>CONFIGURAÇÕES</h3>
+      <div class="cfg-row">
+        <label><span>Nível Inicial (1 a 25)</span><span id="cfgLvlTxt">1</span></label>
+        <input type="range" id="cfgLvl" min="1" max="25" value="1" oninput="setStartLevel(this.value)" />
       </div>
-      <div class="field">
-        <label><span>Nível Inicial</span><span id="startLvlLbl">1</span></label>
-        <input type="range" id="startLvlInput" min="1" max="25" value="1" oninput="document.getElementById('startLvlLbl').textContent=this.value" />
+      <div class="cfg-row">
+        <label><span>DAS (Atraso do Direcional)</span><span id="cfgDasTxt">115 ms</span></label>
+        <input type="range" id="cfgDas" min="50" max="200" value="115" oninput="document.getElementById('cfgDasTxt').textContent=this.value+' ms'" />
       </div>
-      <div class="field">
-        <label><span>DAS (Atraso Lateral)</span><span id="dasLbl">110 ms</span></label>
-        <input type="range" id="dasInput" min="50" max="200" value="110" oninput="document.getElementById('dasLbl').textContent=this.value+' ms'" />
+      <div class="cfg-row">
+        <label><span>ARR (Velocidade Lateral)</span><span id="cfgArrTxt">22 ms</span></label>
+        <input type="range" id="cfgArr" min="0" max="60" value="22" oninput="document.getElementById('cfgArrTxt').textContent=this.value+' ms'" />
       </div>
-      <div class="field">
-        <label><span>ARR (Velocidade Lateral)</span><span id="arrLbl">20 ms</span></label>
-        <input type="range" id="arrInput" min="0" max="60" value="20" oninput="document.getElementById('arrLbl').textContent=this.value+' ms'" />
-      </div>
-      <button class="btn-primary" onclick="startGame()">JOGAR AGORA</button>
+      <button class="modal-btn orange" onclick="closeModals()">SALVAR E VOLTAR</button>
+    </div>
+  </div>
+
+  <!-- MODAL DE AJUDA -->
+  <div class="modal-overlay hidden" id="helpModal">
+    <div class="modal-box">
+      <h3>CONTROLES</h3>
+      <p style="font-size:12px; color:#d4def7; line-height:1.5; text-align:left; margin-bottom:10px;">
+        • <b>▲ (Cima no D-Pad):</b> Queda Instantânea (Hard Drop)<br>
+        • <b>◀ / ▶ (Lados):</b> Move a peça (segure para deslizar rápido)<br>
+        • <b>▼ (Baixo):</b> Queda suave (Soft Drop)<br>
+        • <b>↺ / ↻:</b> Gira a peça (anti-horário / horário)<br>
+        • <b>⤡:</b> Guarda a peça no HOLD<br>
+        • <b>⏸:</b> Pausa a partida
+      </p>
+      <button class="modal-btn orange" onclick="closeModals()">ENTENDI</button>
     </div>
   </div>
 
   <script>
-    const COLS = 10, ROWS = 20, BLOCK = 20;
+    const COLS = 10, ROWS = 20, BLOCK = 19;
     const boardCanvas = document.getElementById('board');
     const ctx = boardCanvas.getContext('2d');
     const holdCanvas = document.getElementById('holdCanvas');
@@ -358,8 +801,13 @@
     const nctx = nextCanvas.getContext('2d');
 
     const COLORS = {
-      I: '#00f0ff', O: '#ffea00', T: '#b829ff',
-      S: '#00e676', Z: '#ff1744', J: '#2979ff', L: '#ff9100'
+      I: { main: '#00d8ff', light: '#80ecff', dark: '#007a99' },
+      O: { main: '#ffd500', light: '#ffea80', dark: '#b38f00' },
+      T: { main: '#b829ff', light: '#df8fff', dark: '#6900a8' },
+      S: { main: '#00e640', light: '#80f59d', dark: '#008c23' },
+      Z: { main: '#ff1e38', light: '#ff8a97', dark: '#a30014' },
+      J: { main: '#1e6BFF', light: '#8ab3ff', dark: '#0038a8' },
+      L: { main: '#ff8400', light: '#ffc280', dark: '#b35600' }
     };
 
     const SHAPES = {
@@ -407,29 +855,76 @@
       ]
     };
 
+    // Velocidade progressiva do Nível 1 até o Nível 25 (20G)
     function getGravityMs(lvl) {
-      const table = [
-        800, 710, 620, 530, 440, 360, 290, 220, 160, 110,
-        80, 60, 45, 32, 22, 15, 11, 8, 6, 4,
-        3, 2, 1, 0.5, 0
+      const speeds = [
+        800, 700, 610, 520, 430, 350, 280, 210, 150, 105,
+        75, 55, 40, 28, 20, 14, 10, 7, 5, 3.5,
+        2.5, 1.5, 1, 0.5, 0
       ];
-      return table[Math.min(25, Math.max(1, lvl)) - 1];
+      return speeds[Math.min(25, Math.max(1, lvl)) - 1];
     }
 
-    let grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+    // Recordes iniciais iguais aos da foto (OKA)
+    const DEFAULT_SCORES = [1084375, 1064938, 1045571, 1040050, 1035985];
+    let highScores = DEFAULT_SCORES.slice();
+    try {
+      const saved = JSON.parse(localStorage.getItem('tetris_oka_scores'));
+      if (Array.isArray(saved) && saved.length === 5) highScores = saved;
+    } catch (e) {}
+
+    function renderHighScores() {
+      const el = document.getElementById('hsList');
+      el.innerHTML = highScores.map(function(s) {
+        return '<div class="hs-row"><span>OKA</span><span>' + s.toLocaleString('en-US') + '</span></div>';
+      }).join('');
+      document.getElementById('bestTop').textContent = '👑 ' + highScores[0].toLocaleString('en-US');
+    }
+
+    function saveScore(newScore) {
+      if (newScore <= 0) return;
+      highScores.push(newScore);
+      highScores.sort(function(a, b) { return b - a; });
+      highScores = highScores.slice(0, 5);
+      try {
+        localStorage.setItem('tetris_oka_scores', JSON.stringify(highScores));
+      } catch (e) {}
+      renderHighScores();
+    }
+
+    let grid = Array.from({ length: ROWS }, function() { return Array(COLS).fill(null); });
     let bag = [], nextQueue = [], holdPiece = null, canHold = true;
     let cur = null, score = 0, lines = 0, level = 1, startLevel = 1, combo = -1, b2b = false;
-    let mode = 'marathon', running = false, lastTime = 0, dropTimer = 0, lockTimer = 0;
-    let gameTimer = 0, lastRotate = false;
+    let gameMode = 'quick'; // 'quick' (3:00) ou 'marathon'
+    let running = false, paused = false, lastTime = 0, dropTimer = 0, lockTimer = 0;
+    let elapsedMs = 0, lastRotate = false;
     let moveDir = 0, dasTimer = 0, arrTimer = 0, softDropping = false;
+    let dropTrail = null; // Efeito de rastro luminoso do vídeo no Hard Drop
+
+    function setStartLevel(val) {
+      startLevel = Number(val);
+      document.getElementById('lvlBtn').textContent = 'LEVEL: ' + startLevel;
+      document.getElementById('cfgLvl').value = startLevel;
+      document.getElementById('cfgLvlTxt').textContent = startLevel;
+    }
+
+    function cycleStartLevel() {
+      const next = startLevel >= 25 ? 1 : startLevel + 1;
+      setStartLevel(next);
+    }
+
+    function toggleGameMode() {
+      gameMode = gameMode === 'quick' ? 'marathon' : 'quick';
+      document.getElementById('modeQuickBtn').innerHTML = gameMode === 'quick' ? 'QUICK<br>PLAY' : 'MARA-<br>THON';
+    }
 
     function refillBag() {
-      const types = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
-      for (let i = types.length - 1; i > 0; i--) {
+      const p = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
+      for (let i = p.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        const tmp = types[i]; types[i] = types[j]; types[j] = tmp;
+        const tmp = p[i]; p[i] = p[j]; p[j] = tmp;
       }
-      for (let i = 0; i < types.length; i++) bag.push(types[i]);
+      for (let i = 0; i < p.length; i++) bag.push(p[i]);
     }
 
     function pullNext() {
@@ -444,13 +939,13 @@
       lockTimer = 0;
       lastRotate = false;
       if (collides(cur.x, cur.y, cur.rot)) {
-        gameOver("FIM DE JOGO");
+        endGame('GAME OVER');
         return;
       }
       if (getGravityMs(level) === 0) {
         while (!collides(cur.x, cur.y + 1, cur.rot)) cur.y++;
       }
-      drawSidePanels();
+      drawSideCanvases();
     }
 
     function collides(nx, ny, nrot) {
@@ -467,7 +962,7 @@
     }
 
     function move(dx) {
-      if (!running || !cur) return false;
+      if (!running || paused || !cur) return false;
       if (!collides(cur.x + dx, cur.y, cur.rot)) {
         cur.x += dx;
         lastRotate = false;
@@ -475,13 +970,14 @@
         if (getGravityMs(level) === 0) {
           while (!collides(cur.x, cur.y + 1, cur.rot)) cur.y++;
         }
+        playSfx(290, 0.025);
         return true;
       }
       return false;
     }
 
     function rotate(dir) {
-      if (!running || !cur) return;
+      if (!running || paused || !cur) return;
       const nrot = (cur.rot + dir + 4) % 4;
       const kicks = [[0,0], [-1,0], [1,0], [0,-1], [-1,-1], [1,-1], [-2,0], [2,0], [0,-2]];
       for (let i = 0; i < kicks.length; i++) {
@@ -499,24 +995,45 @@
     }
 
     function hold() {
-      if (!running || !cur || !canHold) return;
+      if (!running || paused || !cur || !canHold) return;
       canHold = false;
       const prev = holdPiece;
       holdPiece = cur.type;
       spawnPiece(prev || null);
-      playSfx(380, 0.05);
+      playSfx(390, 0.05);
     }
 
     function hardDrop() {
-      if (!running || !cur) return;
+      if (!running || paused || !cur) return;
+      const startY = cur.y;
       let dropped = 0;
       while (!collides(cur.x, cur.y + 1, cur.rot)) {
         cur.y++;
         dropped++;
       }
+      // Cria o rastro de luz vertical igual ao vídeo
+      const m = SHAPES[cur.type][cur.rot];
+      let minC = 4, maxC = -1;
+      for (let r = 0; r < m.length; r++) {
+        for (let c = 0; c < m[r].length; c++) {
+          if (m[r][c]) {
+            if (c < minC) minC = c;
+            if (c > maxC) maxC = c;
+          }
+        }
+      }
+      dropTrail = {
+        x: (cur.x + minC) * BLOCK,
+        w: (maxC - minC + 1) * BLOCK,
+        y1: startY * BLOCK,
+        y2: (cur.y + 2) * BLOCK,
+        color: COLORS[cur.type].light,
+        alpha: 0.75
+      };
+
       score += dropped * 2;
+      playSfx(180, 0.06);
       lockPiece();
-      playSfx(190, 0.07);
     }
 
     function isTSpin() {
@@ -536,7 +1053,7 @@
       for (let r = 0; r < m.length; r++) {
         for (let c = 0; c < m[r].length; c++) {
           if (m[r][c] && cur.y + r >= 0) {
-            grid[cur.y + r][cur.x + c] = COLORS[cur.type];
+            grid[cur.y + r][cur.x + c] = cur.type;
           }
         }
       }
@@ -560,13 +1077,25 @@
         if (difficult && b2b) base = Math.floor(base * 1.5);
         score += (base + Math.max(0, combo * 50)) * level;
 
-        let msg = tspin ? 'T-SPIN ' + ['','SINGLE','DOUBLE','TRIPLE'][cleared] + '!' :
-                  cleared === 4 ? 'QUAD / TETRIS!' :
-                  cleared > 1 ? cleared + ' LINHAS!' : '';
-        if (difficult && b2b) msg = 'B2B ' + msg;
-        if (msg) showBanner(msg);
+        // Badges laterais iguais ao vídeo
+        const tBadge = document.getElementById('tspinBadge');
+        const bBadge = document.getElementById('b2bBadge');
+        if (tspin) {
+          tBadge.innerHTML = 'T-SPIN<br>' + ['','SINGLE','DOUBLE','TRIPLE'][cleared];
+          tBadge.style.opacity = '1';
+          clearTimeout(tBadge._t);
+          tBadge._t = setTimeout(function() { tBadge.style.opacity = '0'; }, 1400);
+        }
+        if (difficult && b2b) {
+          bBadge.style.opacity = '1';
+          clearTimeout(bBadge._t);
+          bBadge._t = setTimeout(function() { bBadge.style.opacity = '0'; }, 1400);
+        }
+
+        if (cleared === 4) showBanner('TETRIS');
+        else if (tspin) showBanner('T-SPIN!');
         b2b = difficult;
-        playSfx(680, 0.12);
+        playSfx(700, 0.14);
       } else {
         combo = -1;
       }
@@ -576,90 +1105,159 @@
       spawnPiece(null);
     }
 
-    function showBanner(text) {
-      const b = document.getElementById('banner');
-      b.textContent = text;
+    function showBanner(txt) {
+      const b = document.getElementById('actionBanner');
+      b.textContent = txt;
       b.style.opacity = '1';
       clearTimeout(b._t);
-      b._t = setTimeout(function() { b.style.opacity = '0'; }, 1100);
+      b._t = setTimeout(function() { b.style.opacity = '0'; }, 950);
     }
 
     function updateHUD() {
-      document.getElementById('lvlVal').textContent = level + ' / 25';
+      document.getElementById('scoreVal').textContent = score.toLocaleString('en-US');
+      document.getElementById('levelVal').textContent = level;
       document.getElementById('linesVal').textContent = lines;
-      document.getElementById('scoreVal').textContent = score;
-      document.getElementById('comboVal').textContent = Math.max(0, combo) + 'x';
+      const stars = score >= 150000 ? '★★★' : score >= 60000 ? '★★☆' : score >= 15000 ? '★☆☆' : '☆☆☆';
+      document.getElementById('starsLbl').textContent = stars;
     }
 
-    function drawSidePanels() {
+    // Desenha um bloco com bisel 3D idêntico ao play.tetris.com
+    function drawBeveledBlock(context, x, y, size, type) {
+      const pal = COLORS[type];
+      context.fillStyle = pal.main;
+      context.fillRect(x, y, size, size);
+
+      // Brilho superior/esquerdo
+      context.fillStyle = pal.light;
+      context.fillRect(x, y, size, 2.5);
+      context.fillRect(x, y, 2.5, size);
+
+      // Sombra inferior/direita
+      context.fillStyle = pal.dark;
+      context.fillRect(x, y + size - 2.5, size, 2.5);
+      context.fillRect(x + size - 2.5, y, 2.5, size);
+
+      // Miolo brilhante
+      context.fillStyle = pal.main;
+      context.fillRect(x + 2.5, y + 2.5, size - 5, size - 5);
+    }
+
+    function drawSideCanvases() {
       hctx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
-      if (holdPiece) drawMini(hctx, holdPiece, 6, 6);
+      if (holdPiece) drawMiniPiece(hctx, holdPiece, 7, 8);
+
       nctx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
       for (let i = 0; i < 3 && i < nextQueue.length; i++) {
-        drawMini(nctx, nextQueue[i], 6, 6 + i * 40);
+        drawMiniPiece(nctx, nextQueue[i], 7, 6 + i * 44);
       }
     }
 
-    function drawMini(context, type, ox, oy) {
+    function drawMiniPiece(context, type, ox, oy) {
       const m = SHAPES[type][0];
-      context.fillStyle = COLORS[type];
       for (let r = 0; r < m.length; r++) {
         for (let c = 0; c < m[r].length; c++) {
-          if (m[r][c]) context.fillRect(ox + c * 10, oy + r * 10, 9, 9);
+          if (m[r][c]) {
+            drawBeveledBlock(context, ox + c * 10, oy + r * 10, 9.5, type);
+          }
         }
       }
     }
 
     function drawBoard() {
       ctx.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-      ctx.strokeStyle = '#131a29';
+
+      // Grade sutil com marcadores '+' nos cruzamentos como na foto
+      ctx.strokeStyle = '#12151c';
+      ctx.lineWidth = 1;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          ctx.strokeRect(c * BLOCK, r * BLOCK, BLOCK, BLOCK);
+        }
+      }
+      ctx.fillStyle = '#252a36';
+      for (let r = 1; r < ROWS; r++) {
+        for (let c = 1; c < COLS; c++) {
+          ctx.fillRect(c * BLOCK - 1, r * BLOCK - 1, 2, 2);
+        }
+      }
+
+      // Efeito de rastro luminoso do Hard Drop (como no vídeo)
+      if (dropTrail && dropTrail.alpha > 0.02) {
+        const grad = ctx.createLinearGradient(0, dropTrail.y1, 0, dropTrail.y2);
+        grad.addColorStop(0, 'rgba(255,255,255,0)');
+        grad.addColorStop(1, dropTrail.color);
+        ctx.save();
+        ctx.globalAlpha = dropTrail.alpha;
+        ctx.fillStyle = grad;
+        ctx.fillRect(dropTrail.x, dropTrail.y1, dropTrail.w, dropTrail.y2 - dropTrail.y1);
+        ctx.restore();
+        dropTrail.alpha *= 0.82;
+      }
+
+      // Peças já fixadas
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
           if (grid[r][c]) {
-            ctx.fillStyle = grid[r][c];
-            ctx.fillRect(c * BLOCK + 1, r * BLOCK + 1, BLOCK - 2, BLOCK - 2);
-          } else {
-            ctx.strokeRect(c * BLOCK, r * BLOCK, BLOCK, BLOCK);
+            drawBeveledBlock(ctx, c * BLOCK, r * BLOCK, BLOCK, grid[r][c]);
           }
         }
       }
-      if (!cur) return;
+
+      if (!cur || !running) return;
+
+      // Ghost Piece (contorno branco/cinza claro igual ao vídeo e foto)
       let gy = cur.y;
       while (!collides(cur.x, gy + 1, cur.rot)) gy++;
       const m = SHAPES[cur.type][cur.rot];
-      ctx.strokeStyle = COLORS[cur.type];
-      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+      ctx.lineWidth = 1.6;
       for (let r = 0; r < m.length; r++) {
         for (let c = 0; c < m[r].length; c++) {
-          if (m[r][c]) ctx.strokeRect((cur.x + c) * BLOCK + 2, (gy + r) * BLOCK + 2, BLOCK - 4, BLOCK - 4);
+          if (m[r][c]) {
+            ctx.strokeRect((cur.x + c) * BLOCK + 1.5, (gy + r) * BLOCK + 1.5, BLOCK - 3, BLOCK - 3);
+          }
         }
       }
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = COLORS[cur.type];
+
+      // Peça atual
       for (let r = 0; r < m.length; r++) {
         for (let c = 0; c < m[r].length; c++) {
-          if (m[r][c]) ctx.fillRect((cur.x + c) * BLOCK + 1, (cur.y + r) * BLOCK + 1, BLOCK - 2, BLOCK - 2);
+          if (m[r][c]) {
+            drawBeveledBlock(ctx, (cur.x + c) * BLOCK, (cur.y + r) * BLOCK, BLOCK, cur.type);
+          }
         }
       }
     }
 
-    function loop(ts) {
-      if (!running) return;
-      const dt = ts - lastTime;
+    function gameLoop(ts) {
+      if (!running || paused) return;
+      const dt = Math.min(50, ts - lastTime);
       lastTime = ts;
 
-      gameTimer += dt;
-      let sec = Math.floor(gameTimer / 1000);
-      if (mode === 'quick') {
-        sec = Math.max(0, 180 - sec);
-        if (sec === 0) { gameOver("TEMPO ESGOTADO!"); return; }
+      // Cronômetro e barra inferior
+      elapsedMs += dt;
+      if (gameMode === 'quick') {
+        const remain = Math.max(0, 180000 - elapsedMs);
+        const sec = Math.ceil(remain / 1000);
+        const mm = String(Math.floor(sec / 60)).padStart(2, '0');
+        const ss = String(sec % 60).padStart(2, '0');
+        document.getElementById('timerLbl').textContent = mm + ':' + ss;
+        document.getElementById('timerFill').style.width = ((remain / 180000) * 100) + '%';
+        if (remain <= 0) {
+          endGame("TIME'S UP!");
+          return;
+        }
+      } else {
+        const sec = Math.floor(elapsedMs / 1000);
+        const mm = String(Math.floor(sec / 60)).padStart(2, '0');
+        const ss = String(sec % 60).padStart(2, '0');
+        document.getElementById('timerLbl').textContent = mm + ':' + ss;
+        document.getElementById('timerFill').style.width = ((level / 25) * 100) + '%';
       }
-      const mm = String(Math.floor(sec / 60)).padStart(2, '0');
-      const ss = String(sec % 60).padStart(2, '0');
-      document.getElementById('timeVal').textContent = mm + ':' + ss;
 
-      const das = Number(document.getElementById('dasInput').value);
-      const arr = Number(document.getElementById('arrInput').value);
+      // DAS e ARR para movimento lateral fluido
+      const das = Number(document.getElementById('cfgDas').value);
+      const arr = Number(document.getElementById('cfgArr').value);
       if (moveDir !== 0) {
         dasTimer += dt;
         if (dasTimer >= das) {
@@ -673,7 +1271,8 @@
         }
       }
 
-      const grav = softDropping ? Math.min(25, getGravityMs(level)) : getGravityMs(level);
+      // Gravidade e Soft Drop
+      const grav = softDropping ? Math.min(22, getGravityMs(level)) : getGravityMs(level);
       if (grav === 0) {
         while (!collides(cur.x, cur.y + 1, cur.rot)) cur.y++;
       } else {
@@ -687,6 +1286,7 @@
         }
       }
 
+      // Lock Delay (500ms)
       if (collides(cur.x, cur.y + 1, cur.rot)) {
         lockTimer += dt;
         if (lockTimer >= 500) lockPiece();
@@ -695,23 +1295,13 @@
       }
 
       drawBoard();
-      requestAnimationFrame(loop);
+      requestAnimationFrame(gameLoop);
     }
 
-    function openMenu() {
-      running = false;
-      document.getElementById('menuOverlay').classList.remove('hidden');
-    }
-
-    function gameOver(title) {
-      running = false;
-      document.getElementById('modalTitle').textContent = title + ' (' + score + ' pts)';
-      document.getElementById('menuOverlay').classList.remove('hidden');
-    }
-
-    function startGame() {
+    function startNewGame() {
+      closeModals();
       initAudio();
-      grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+      grid = Array.from({ length: ROWS }, function() { return Array(COLS).fill(null); });
       bag = [];
       nextQueue = [pullNext(), pullNext(), pullNext()];
       holdPiece = null;
@@ -720,70 +1310,142 @@
       lines = 0;
       combo = -1;
       b2b = false;
-      gameTimer = 0;
-      mode = document.getElementById('modeSelect').value;
-      startLevel = Number(document.getElementById('startLvlInput').value);
+      elapsedMs = 0;
       level = startLevel;
       updateHUD();
-      document.getElementById('menuOverlay').classList.add('hidden');
+      document.getElementById('startScreen').classList.add('hidden');
       spawnPiece(null);
       running = true;
+      paused = false;
       lastTime = performance.now();
-      requestAnimationFrame(loop);
+      requestAnimationFrame(gameLoop);
     }
 
-    function bindHoldDir(id, dir) {
-      const el = document.getElementById(id);
-      const start = function(e) {
+    function endGame(msg) {
+      running = false;
+      paused = false;
+      saveScore(score);
+      showBanner(msg);
+      document.getElementById('startScreen').classList.remove('hidden');
+      drawBoard();
+    }
+
+    function pauseGame() {
+      if (!running) {
+        openSettingsModal();
+        return;
+      }
+      paused = true;
+      document.getElementById('pauseModal').classList.remove('hidden');
+    }
+
+    function resumeGame() {
+      document.getElementById('pauseModal').classList.add('hidden');
+      if (running && paused) {
+        paused = false;
+        lastTime = performance.now();
+        requestAnimationFrame(gameLoop);
+      }
+    }
+
+    function quitToMenu() {
+      closeModals();
+      endGame('FIM DE JOGO');
+    }
+
+    function openSettingsModal() {
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function openHelpModal() {
+      document.getElementById('helpModal').classList.remove('hidden');
+    }
+
+    function closeModals() {
+      document.getElementById('pauseModal').classList.add('hidden');
+      document.getElementById('settingsModal').classList.add('hidden');
+      document.getElementById('helpModal').classList.add('hidden');
+    }
+
+    // SISTEMA MULTI-TOUCH DE ALTA PRECISÃO PARA OS BOTÕES DO VÍDEO
+    function bindActionBtn(id, actionFn) {
+      const btn = document.getElementById(id);
+      const onDown = function(e) {
         e.preventDefault();
-        el.classList.add('pressed');
+        btn.classList.add('pressed');
+        actionFn();
+      };
+      const onUp = function(e) {
+        e.preventDefault();
+        btn.classList.remove('pressed');
+      };
+      btn.addEventListener('pointerdown', onDown);
+      btn.addEventListener('pointerup', onUp);
+      btn.addEventListener('pointercancel', onUp);
+      btn.addEventListener('pointerleave', onUp);
+    }
+
+    bindActionBtn('btnPause', pauseGame);
+    bindActionBtn('btnHold', hold);
+    bindActionBtn('btnCCW', function() { rotate(-1); });
+    bindActionBtn('btnCW', function() { rotate(1); });
+    bindActionBtn('btnUp', hardDrop);
+
+    function bindHoldDirection(id, dir) {
+      const btn = document.getElementById(id);
+      const onDown = function(e) {
+        e.preventDefault();
+        btn.classList.add('pressed');
         moveDir = dir;
         dasTimer = 0;
         arrTimer = 0;
         move(dir);
       };
-      const end = function(e) {
+      const onUp = function(e) {
         e.preventDefault();
-        el.classList.remove('pressed');
+        btn.classList.remove('pressed');
         if (moveDir === dir) moveDir = 0;
       };
-      el.addEventListener('touchstart', start, { passive: false });
-      el.addEventListener('touchend', end, { passive: false });
-      el.addEventListener('mousedown', start);
-      el.addEventListener('mouseup', end);
+      btn.addEventListener('pointerdown', onDown);
+      btn.addEventListener('pointerup', onUp);
+      btn.addEventListener('pointercancel', onUp);
+      btn.addEventListener('pointerleave', onUp);
     }
 
-    function bindTap(id, fn) {
-      const el = document.getElementById(id);
-      const start = function(e) {
-        e.preventDefault();
-        el.classList.add('pressed');
-        fn();
-      };
-      const end = function(e) {
-        e.preventDefault();
-        el.classList.remove('pressed');
-      };
-      el.addEventListener('touchstart', start, { passive: false });
-      el.addEventListener('touchend', end, { passive: false });
-      el.addEventListener('mousedown', start);
-      el.addEventListener('mouseup', end);
-    }
-
-    bindHoldDir('btnLeft', -1);
-    bindHoldDir('btnRight', 1);
-    bindTap('btnCW', function() { rotate(1); });
-    bindTap('btnCCW', function() { rotate(-1); });
-    bindTap('btn180', function() { rotate(2); });
-    bindTap('btnHold', function() { hold(); });
-    bindTap('btnHard', function() { hardDrop(); });
+    bindHoldDirection('btnLeft', -1);
+    bindHoldDirection('btnRight', 1);
 
     const btnDown = document.getElementById('btnDown');
-    btnDown.addEventListener('touchstart', function(e) { e.preventDefault(); softDropping = true; btnDown.classList.add('pressed'); }, { passive: false });
-    btnDown.addEventListener('touchend', function(e) { e.preventDefault(); softDropping = false; btnDown.classList.remove('pressed'); }, { passive: false });
-    btnDown.addEventListener('mousedown', function() { softDropping = true; btnDown.classList.add('pressed'); });
-    btnDown.addEventListener('mouseup', function() { softDropping = false; btnDown.classList.remove('pressed'); });
+    btnDown.addEventListener('pointerdown', function(e) {
+      e.preventDefault();
+      btnDown.classList.add('pressed');
+      softDropping = true;
+    });
+    const stopSoft = function(e) {
+      e.preventDefault();
+      btnDown.classList.remove('pressed');
+      softDropping = false;
+    };
+    btnDown.addEventListener('pointerup', stopSoft);
+    btnDown.addEventListener('pointercancel', stopSoft);
+    btnDown.addEventListener('pointerleave', stopSoft);
 
+    // Suporte a Teclado caso teste no PC
+    window.addEventListener('keydown', function(e) {
+      if (!running || paused) return;
+      if (e.key === 'ArrowLeft') move(-1);
+      else if (e.key === 'ArrowRight') move(1);
+      else if (e.key === 'ArrowDown') softDropping = true;
+      else if (e.key === 'ArrowUp' || e.key === ' ') hardDrop();
+      else if (e.key === 'z' || e.key === 'Z') rotate(-1);
+      else if (e.key === 'x' || e.key === 'X') rotate(1);
+      else if (e.key === 'c' || e.key === 'C' || e.key === 'Shift') hold();
+    });
+    window.addEventListener('keyup', function(e) {
+      if (e.key === 'ArrowDown') softDropping = false;
+    });
+
+    // SINTETIZADOR DE 5 MÚSICAS CLÁSSICAS DO TETRIS
     let actx = null, muted = false, currentTrack = 0, noteIdx = 0, musicTimer = null;
     const N = {
       A3:220, B3:246.9, C4:261.6, D4:293.7, E4:329.6, F4:349.2, G4:392.0, G4s:415.3,
@@ -823,13 +1485,13 @@
       const seq = TRACKS[currentTrack];
       const item = seq[noteIdx % seq.length];
       const freq = item[0], beats = item[1];
-      const dur = beats * 0.14;
+      const dur = beats * 0.135;
       if (!muted && actx && freq > 0) {
         try {
           const osc = actx.createOscillator(), g = actx.createGain();
           osc.type = 'square';
           osc.frequency.value = freq;
-          g.gain.setValueAtTime(0.035, actx.currentTime);
+          g.gain.setValueAtTime(0.03, actx.currentTime);
           g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur * 0.9);
           osc.connect(g); g.connect(actx.destination);
           osc.start(); osc.stop(actx.currentTime + dur * 0.9);
@@ -839,7 +1501,7 @@
       musicTimer = setTimeout(startMusicLoop, dur * 1000);
     }
 
-    function setTrack(idx) {
+    function selectMusic(idx) {
       currentTrack = idx;
       noteIdx = 0;
       for (let i = 0; i < 5; i++) {
@@ -848,11 +1510,12 @@
       initAudio();
     }
 
-    function toggleMute() {
+    function toggleAudioMute() {
       muted = !muted;
       document.getElementById('muteBtn').textContent = muted ? '🔇' : '🔊';
     }
 
+    renderHighScores();
     drawBoard();
   </script>
 </body>
