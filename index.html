@@ -1,71 +1,163 @@
-name: Build Android APK
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>TETR.IO Mobile - Nível 25</title>
+  <style>
+    :root {
+      --bg: #090b10;
+      --panel: #121722;
+      --border: #263147;
+      --accent: #00f0ff;
+      --text: #eef2ff;
+      --muted: #7c8ba1;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
+    }
+    html, body {
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #131926 0%, #07090e 100%);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: env(safe-area-inset-top, 6px) 6px env(safe-area-inset-bottom, 8px);
+    }
 
-on:
-  push:
-    branches: [ main, master ]
-  workflow_dispatch:
+    /* TOPO E MÚSICAS */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 8px;
+      flex-shrink: 0;
+    }
+    .brand {
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: var(--accent);
+      text-shadow: 0 0 8px rgba(0,240,255,0.4);
+    }
+    .music-bar {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .btn-sm {
+      background: #1b2234;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 4px 7px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-sm.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
 
-jobs:
-  build-apk:
-    runs-on: ubuntu-24.04
+    /* ÁREA DO JOGO */
+    .game-area {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 6px;
+      flex: 1;
+      min-height: 0;
+      padding: 4px 0;
+    }
+    .side-col {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 68px;
+      flex-shrink: 0;
+    }
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+      text-align: center;
+    }
+    .box-title {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-bottom: 3px;
+    }
+    .stat-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .stat-val.accent {
+      color: var(--accent);
+    }
+    .board-wrap {
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    canvas#board {
+      background: #06080d;
+      border: 2px solid #2e3c56;
+      border-radius: 6px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+      max-height: 100%;
+      width: auto;
+    }
+    .action-banner {
+      position: absolute;
+      top: 22%;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      text-align: center;
+      font-weight: 900;
+      font-size: 15px;
+      color: #ffea00;
+      text-shadow: 0 2px 8px #000;
+      opacity: 0;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
 
-    steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
-
-      - name: Configurar Node.js 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Configurar Java JDK 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Preparar estrutura e compilar APK
-        run: |
-          # 1. Criar a pasta www e localizar automaticamente o index.html
-          mkdir -p www
-          if [ -f "index.html" ]; then
-            cp index.html www/index.html
-          elif [ ! -f "www/index.html" ]; then
-            HTML_FILE=$(find . -maxdepth 1 -name "*.html" | head -n 1)
-            if [ -n "$HTML_FILE" ]; then
-              cp "$HTML_FILE" www/index.html
-            else
-              echo "ERRO: Nenhum ficheiro .html foi encontrado no repositório! Envie o ficheiro index.html do jogo para a raiz do repositório."
-              exit 1
-            fi
-          fi
-
-          # 2. Limpar ficheiros antigos, iniciar o NPM e instalar o Capacitor
-          rm -rf node_modules package.json package-lock.json android capacitor.config.json capacitor.config.ts
-          npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-
-          # 3. Gerar o capacitor.config.json diretamente sem erros de CLI
-          cat << 'EOF' > capacitor.config.json
-          {
-            "appId": "com.tetrio.mobile",
-            "appName": "TETRIO Mobile",
-            "webDir": "www",
-            "bundledWebRuntime": false
-          }
-          EOF
-
-          # 4. Criar e sincronizar o projeto Android
-          npx cap add android
-          npx cap sync android
-
-          # 5. Dar permissão de execução ao Gradle e gerar o APK
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
-
-      - name: Publicar APK para Download
-        uses: actions/upload-artifact@v4
-        with:
-          name: TETRIO-Mobile-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+    /* CONTROLOS NO ECRÃ */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+      padding-bottom: 2px;
+    }
+    .ctrl-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .ctrl-btn {
+      background: linear-gradient(180deg, #1f293d 0%, #141b29 100%);
+      border
