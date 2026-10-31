@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-apk:
     runs-on: ubuntu-24.04
@@ -26,26 +29,38 @@ jobs:
 
       - name: Preparar estrutura e compilar APK
         run: |
-          # 1. Criar a pasta www e localizar automaticamente o index.html
           mkdir -p www
+
+          # Procura qualquer ficheiro no repositório que contenha o código HTML do jogo
           if [ -f "index.html" ]; then
             cp index.html www/index.html
           elif [ ! -f "www/index.html" ]; then
-            HTML_FILE=$(find . -maxdepth 1 -name "*.html" | head -n 1)
-            if [ -n "$HTML_FILE" ]; then
-              cp "$HTML_FILE" www/index.html
+            FOUND_HTML=$(grep -rl -i "<!DOCTYPE html>" . --exclude-dir={.git,.github,node_modules,android,www} | head -n 1 || true)
+            if [ -n "$FOUND_HTML" ]; then
+              echo "Ficheiro HTML encontrado em: $FOUND_HTML"
+              cp "$FOUND_HTML" www/index.html
             else
-              echo "ERRO: Nenhum ficheiro .html foi encontrado no repositório! Envie o ficheiro index.html do jogo para a raiz do repositório."
+              echo "=================================================================="
+              echo "ERRO: O ficheiro index.html com o código do jogo não está no repositório!"
+              echo "Vá ao separador '<> Code' -> 'Add file' -> 'Create new file',"
+              echo "dê o nome 'index.html', cole o código do jogo e faça Commit."
+              echo "=================================================================="
               exit 1
             fi
           fi
 
-          # 2. Limpar ficheiros antigos, iniciar o NPM e instalar o Capacitor
+          # Limpar ficheiros temporários e criar package.json válido
           rm -rf node_modules package.json package-lock.json android capacitor.config.json capacitor.config.ts
-          npm init -y
+          cat << 'EOF' > package.json
+          {
+            "name": "tetrio-mobile-app",
+            "version": "1.0.0",
+            "private": true
+          }
+          EOF
+
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
-          # 3. Gerar o capacitor.config.json diretamente sem erros de CLI
           cat << 'EOF' > capacitor.config.json
           {
             "appId": "com.tetrio.mobile",
@@ -55,11 +70,9 @@ jobs:
           }
           EOF
 
-          # 4. Criar e sincronizar o projeto Android
           npx cap add android
           npx cap sync android
 
-          # 5. Dar permissão de execução ao Gradle e gerar o APK
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
